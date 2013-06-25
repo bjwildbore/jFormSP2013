@@ -1,0 +1,142 @@
+/* Table css  */
+.jfspTable{
+	border:1px solid #eee;
+	width:100%;
+	background-color:#efefef;
+} 
+
+.jfspTable thead th{
+    text-align:left;
+    padding:10px;
+    border:none;
+    background-color:#ddd;
+	border-bottom:2px dashed #aaa; 
+	vertical-align: middle;	
+}
+
+
+.jfspTable tfoot a{
+	display:block;
+	width:100%;
+	text-align:right;
+	background-color:#aaa;
+	padding: 3px 0;	
+	color:#fefefe;
+	text-decoration:none;	
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+	-o-transition: background-color .5s;
+	-ms-transition: background-color .5s;
+	transition: background-color .5s;	
+}	
+
+.jfspTable tfoot a span{margin-right:10px; }
+
+.jfspTable tfoot a:hover{
+	background-color:#777;	
+	color:#efefef;
+}
+
+.jfspTable tfoot td{
+	padding:0;
+	vertical-align: middle;
+}
+
+.jfspTable tfoot i, .jfspTable tbody td:last-child a {
+    background-color:#ddd;
+	text-decoration:none;	
+	color: #222222;
+    display: inline-block;
+    font-size: 1.2em;
+    text-align: center ;
+	height:30px;	
+	width:30px;
+	line-height: 30px;	
+	margin-right:5px;	
+}
+
+.jfspTable tfoot i:hover, .jfspTable tbody td:last-child a:hover {
+    background-color:#bbb;    
+}
+
+.jfspTable tbody tr:last-child td{
+	border-bottom:2px dashed #ccc;    
+}
+
+.jfspTable tbody td:last-child{
+	text-align:right;
+}
+
+.jfspTable tbody td:last-child span{
+	display:none;
+}
+
+.jfspTable tbody td{
+	padding:3px 0 3px 3px;
+	border: none;
+	vertical-align: middle;
+}
+
+.jfspTable tbody tr:last-child .downButton , .jfspTable tbody tr:first-child .upButton {
+     visibility: hidden;
+}
+
+.jfspTable tbody tr:nth-child(2n),.jfspTable tbody tr:nth-child(2n) td{
+	background-color:#e6e6e6;
+}
+
+/* Dialog css  */
+.jfspDialog{
+	background-color:#ddd;
+	border:1px solid #ccc;
+	z-index:999;
+		float:left;
+	position:absolute;
+	padding:0;
+	min-width: 40%;
+	
+}
+
+.jfspDialogHeader,.jfspDialogItems,.jfspDialogButtons{
+	float:left;
+	width:96%;
+	clear:both;
+}
+
+.jfspDialogHeader,.jfspDialogItems{
+	padding:1% 2%;
+	border-bottom: 2px dashed #aaa	
+}
+
+
+.jfspDialogHeader{
+    background-color:#eee;    
+}
+
+.jfspDialogButtons{
+    background-color:#eee; 
+	width:100%; 
+}
+
+.jfspDialogItems > div {padding:5px 0}
+.jfspDialogItems > div span {
+    display:block;
+	padding:2px 0 2px 0;    
+}
+
+.jfspDialogItems .required span{color:#900}
+
+.jfspDialogButtons  a {display:block; float:left;width:50%; text-decoration:none;text-align:center;padding:1% 0;color:#222}
+
+.jfspDialogCancel i{margin-right:10px;}
+.jfspDialogSubmit i{margin-right:10px;}
+.jfspDialogSubmit:hover, .jfspDialogCancel:hover{ background-color:#777;	
+	color:#efefef; }
+
+.jfspDialogItems input{	
+	margin:0 10px 10px 0;
+}
+
+.jfspDialogItems input:not([type="radio"]):not([type="checkbox"]), .jfspDialogItems textarea{	
+	width:100%
+}
