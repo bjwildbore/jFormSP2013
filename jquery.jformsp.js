@@ -1,34 +1,28 @@
 ; (function ($) {
     "use strict";
 
-
     var methods = {
         init: function (options) {
+		
             var $this = $(this),
 			settings = $.extend({
 			    "dataListFields": "",
 			    "ignoreFields": "",
-			    "dataFieldConfig": [],
-			    "showMove": true,
-			    "showEdit": true,
-			    "showDelete": true,
-			    "objects": [],
-			    "showDialogId": false,
+			    "dataFieldConfig": [],	
+				
+			    "afterInit": function () { return true; },
 			    "onClickAdd": function () { return true; },
 			    "onClickEdit": function () { return true; },
-			    "onClickRemove": function () { return true; },
-			    "onClickMoveUp": function () { return true; },
-			    "onClickMoveDown": function () { return true; },
-			    "afterArrayChange": function () { return true; },
-			    "afterInit": function () { return true; },
+			    "onClickDelete": function () { return true; },
+			    
 			    "afterDialogShow": function () { return true; },
+				
 			    "afterObjectAdd": function () { return true; },
 			    "afterObjectRemove": function () { return true; },
 			    "afterObjectUpdate": function () { return true; },
-			    "afterObjectMove": function () { return true; },
+			    
 			    "beforeObjectAdd": function () { return true; },
-			    "beforeObjectUpdate": function () { return true; },
-			    "beforeObjectMove": function () { return true; },
+			    "beforeObjectUpdate": function () { return true; },			    
 			    "beforeObjectRemove": function () { return true; }
 			}, options);
 
@@ -41,10 +35,9 @@
             }
 
             $this.data("settings", settings);
-
-            initArray($this, settings.objects);
-            renderDataTable($this);
-            renderDialog($this);
+			
+            _prepareEditForm($this);
+            _prepareDisplayForm($this);
 
             if (typeof settings.afterInit === "function") {
                 if (!settings.afterInit.call(this, $this)) {
@@ -52,17 +45,145 @@
                 }
             }
 
-
         },
 
-        getArrayObjects: function () {
-            return $(this).data("objects");
-        },
+		showDisplayForm:function(obj){
+			console.log('showDisplayForm',obj);
+			var $this = $(this),
+				settings = $this.data("settings", settings);
+			
+			/*
+			
+				Do Stuff Here
+			
+			*/
+			
+			if (typeof settings.afterDialogShow === "function") {
+                if (!settings.afterDialogShow.call(this, $this)) {
+                    return false;
+                }
+            }			
+			
+			
+		},
+		
+		showEditForm: function(obj){
+			console.log('showEditForm',obj);
+			var $this = $(this),
+				settings = $this.data("settings", settings);
+			
+			
+			/*
+			
+				Do Stuff Here
+			
+			*/
+			
+			if (typeof settings.afterDialogShow === "function") {
+                if (!settings.afterDialogShow.call(this, $this)) {
+                    return false;
+                }
+            }
+		},
 
-        getArrayJSON: function () {
-            return JSON.stringify($(this).data("objects"));
-        },
+		addItem:function(list,values){
+			console.log('addItem',obj);
+			var $this = $(this),				
+				settings = $this.data("settings", settings);
+			
+			if (typeof settings.beforeObjectAdd === "function") {
+                if (!settings.beforeObjectAdd.call(this, $this)) {
+                    return false;
+                }
+            }		
+			
+			$().SPServices({
+				operation: "UpdateListItems",					
+				listName: list,
+				batchCmd: "New",					
+				valuepairs: values,
+				completefunc: function (xData, Status) {
+					return true;
+				}
+			});
+			
+			
+			
+			if (typeof settings.afterObjectAdd === "function") {
+                if (!settings.afterObjectAdd.call(this, $this)) {
+                    return false;
+                }
+            }
+		},		
+		
+		updateItem:function(list, id, values){
+			console.log('removeItem',obj);
+			var $this = $(this),				
+				settings = $this.data("settings", settings);
+			
+			if (typeof settings.beforeObjectUpdate === "function") {
+                if (!settings.beforeObjectUpdate.call(this, $this)) {
+                    return false;
+                }
+            }
+			
+			
+				
+				$().SPServices({
+					operation: "UpdateListItems",					
+					listName: list,
+					ID: ,
+					//valuepairs: [['Title',obj.ows_Title]],
+					valuepairs: values,
+					completefunc: function (xData, Status) {
+						return true;
+					}
+				});	
+			
+			
+			
+			if (typeof settings.afterObjectUpdate === "function") {
+                if (!settings.afterObjectUpdate.call(this, $this)) {
+                    return false;
+                }
+            }
+		},
+		
+		removeItem: function(list,id){
+			console.log('removeItem',obj);
+			var $this = $(this),				
+				settings = $this.data("settings", settings);
+			
+			if (typeof settings.beforeObjectRemove === "function") {
+                if (!settings.beforeObjectRemove.call(this, $this)) {
+                    return false;
+                }
+            }			
+			
+			$().SPServices({
+				operation: "UpdateListItems",
+				async: true,					
+				batchCmd: "Delete",
+				listName: list,
+				ID: id,
+				completefunc: function (xData, Status) {
+					return true;
+				}
+			});
+			
 
+			
+			if (typeof settings.afterObjectRemove === "function") {
+                if (!settings.afterObjectRemove.call(this, $this)) {
+                    return false;
+                }
+            }
+			
+			
+		}
+	
+
+	/*
         createItem: function (obj) {
             var $this = $(this),
 				settings = $this.data("settings"),
@@ -145,47 +266,7 @@
             return true;
         },
 
-        moveItem: function (id, dir) {
-            var $this = $(this),
-				trId = $this.attr("id") + "Tr_" + id,
-				currentTr = $("#" + trId),
-				settings = $this.data("settings"),
-				obj = getArrayObject($this, id);
-
-            if (typeof settings.beforeObjectMove === "function") {
-                if (!settings.beforeObjectMove.call(this, obj)) {
-                    return false;
-                }
-            }
-
-            moveArrayItem($this, id, dir);
-
-            if (dir === 1) {
-                currentTr.hide();
-                currentTr.prev().before(currentTr);
-                currentTr.show();
-                if (typeof jQuery.ui != 'undefined') {
-                    $("#" + trId + " td").effect("highlight", {}, 1000);
-                }
-            } else {
-                currentTr.hide();
-                currentTr.next().after(currentTr);
-                currentTr.show();
-                if (typeof jQuery.ui != 'undefined') {
-                    $("#" + trId + " td").effect("highlight", {}, 1000);
-                }
-            }
-
-            if (typeof settings.afterObjectMove === "function") {
-                settings.afterObjectMove.call(this, obj);
-            }
-
-            if (typeof settings.afterArrayChange === "function") { // make sure the callback is a function
-                settings.afterArrayChange.call(this, obj); // brings the scope to the callback
-            }
-
-            return $this;
-        },
+   
 
         editItem: function (id, dialogId) {
             var $this = $(this),
@@ -220,7 +301,7 @@
                     return false;
                 }
             }
-
+			
             removeArrayObject($this, obj);
             $("#" + trId).remove();
 
@@ -233,7 +314,6 @@
             }
 
         },
-
 
 
         addItem: function (dialogId) {
@@ -256,10 +336,12 @@
             }
         }
 
-
+*/
 
     };
 
+	
+	
     $.fn.jfsp = function (method) {
 
         if (methods[method]) {
@@ -275,306 +357,28 @@
 
     /* Private functions */
 
-    function initArray($this, objects) {
-        var i = 0,
-			len = 0,
-			newItem = {},
-			settings = $this.data("settings"),
-			newObjects = [];
-
-        // find the item in the array and place it after
-        for (i = 0, len = objects.length; i < len; i++) {
-            newItem = {};
-
-            for (var key in objects[i]) {
-                if (objects[i].hasOwnProperty(key)) {
-                    if ($.inArray(key, settings.ignoreFields) <= -1) {
-                        newItem[key] = objects[i][key];
-                    }
-                }
-            }
-            newObjects.push(newItem);
-        }
-
-        setArrayObjects($this, newObjects);
-        return $this;
-    }
-
-    function setArrayObjects($this, objects) {
-        $this.data("objects", objects);
-        return $this;
-    }
-
-    function getArrayObject($this, id) {
-        var i = 0,
-			len = 0,
-			tmpObjects = $this.jfsp("getArrayObjects");
-
-        for (i = 0, len = tmpObjects.length; i < len; i++) {
-            if (tmpObjects[i].id == id) {
-                return tmpObjects[i];
-            }
-        }
-        return false;
-    }
-
-    function isIdUnique($this, id) {
-        var tmpObjects = $this.jfsp("getArrayObjects"),
-			i = 0,
-			len = 0;
-
-        for (i = 0, len = tmpObjects.length; i < len; i++) {
-            if (tmpObjects[i].id == id) {
-                return false;
-            }
-        }
-        return true;
-    }
 
 
-    function moveArrayItem($this, id, dir) {
-        var i = 0,
-			len = 0,
-			movingItem = {},
-			movingItemIndex = 0,
-			tmpObjects = $this.jfsp("getArrayObjects"),
-			newObjects = [];
-
-        // if we are moving an item up, flip the array around and perform same operation below
-        // then flip is back
-        if (dir === 1) {
-            tmpObjects = tmpObjects.reverse();
-        }
-
-        // find the item in the array and place it after
-        for (i = 0, len = tmpObjects.length; i < len; i++) {
-            if (tmpObjects[i].id == id) {
-                movingItem = tmpObjects[i];
-                movingItemIndex = i;
-            } else {
-                if (!$.isEmptyObject(movingItem)) {
-                    newObjects[movingItemIndex] = tmpObjects[i];
-                    newObjects[i] = movingItem;
-                    movingItem = {};
-                } else {
-                    newObjects[i] = tmpObjects[i];
-                }
-            }
-        }
-
-        // if moving up, flip array back
-        if (dir === 1) {
-            newObjects = newObjects.reverse();
-        }
-
-        setArrayObjects($this, newObjects);
-        return $this;
-    }
-
-    function setArrayObject($this, obj, id) {
-        var i = 0,
-			len = 0,
-			tmpObjects = $this.jfsp("getArrayObjects");
-
-        for (i = 0, len = tmpObjects.length; i < len; i++) {
-            if (tmpObjects[i].id == id) {
-                tmpObjects[i] = obj;
-                break;
-            }
-        }
-
-        setArrayObjects($this, tmpObjects);
-        return $this;
-    }
-
-    function addArrayObject($this, obj) {
-        var tmpObjects = $this.jfsp("getArrayObjects");
-        tmpObjects.push(obj);
-        setArrayObjects($this, tmpObjects);
-        return $this;
-    }
-
-    function removeArrayObject($this, obj) {
-        var i = 0,
-			len = 0,
-			tmpObjects = $this.jfsp("getArrayObjects");
-
-        for (i = 0, len = tmpObjects.length; i < len; i++) {
-            if (tmpObjects[i].id == obj.id) {
-                tmpObjects.splice(i, 1);
-                break;
-            }
-        }
-
-        setArrayObjects($this, tmpObjects);
-        return $this;
-    }
+	function _getItem($this, obj){
+		console.log('_getItem');
+		return false
+	}
 
 
-    function renderDataTable($this) {
-        var dataTableHtml = getDataTableHtml($this),
-			dialogId = $this.attr("id") + "Dialog",
-			settings = $this.data("settings");
+	function _prepareEditForm($this){
+		console.log('_prepareEditForm');
+		return false
+	}
 
-        $this.append(dataTableHtml);
-
-        $(".jfspTable").on("click.jfsp", "a.removeButton", function (event) {
-            if (typeof settings.onClickRemove === "function") {
-                if (!settings.onClickRemove.call(this, event)) {
-                    return false;
-                }
-            }
-
-            $this.jfsp("deleteItem", $(this).attr("data-id"));
-        });
-
-        $(".jfspTable", $this).on("click", ".editButton", function (event) {
-
-            if (typeof settings.onClickEdit === "function") {
-                if (!settings.onClickEdit.call(this, event)) {
-                    return false;
-                }
-            }
-
-            $this.jfsp("editItem", $(this).attr("data-id"), dialogId);
-
-        });
-
-        $(".jfspTable", $this).on("click", ".upButton", function (event) {
-            if (typeof settings.onClickMoveUp === "function") {
-                if (!settings.onClickMoveUp.call(this, event)) {
-                    return false;
-                }
-            }
-            $this.jfsp("moveItem", $(this).attr("data-id"), 1);
-        });
-
-        $(".jfspTable", $this).on("click", ".downButton", function (event) {
-            if (typeof settings.onClickMoveDown === "function") {
-                if (!settings.onClickMoveDown.call(this, event)) {
-                    return false;
-                }
-            }
-            $this.jfsp("moveItem", $(this).attr("data-id"), 0);
-        });
-
-        $(".jfspTable", $this).on("click", ".jfspAddItemLink", function (event) {
-            if (typeof settings.onClickAdd === "function") {
-                if (!settings.onClickAdd.call(this, event)) {
-                    return false;
-                }
-            }
-
-            $this.jfsp("addItem", dialogId);
-
-        });
-        return $this;
-    }
+	function _prepareDisplayForm($this){
+		console.log('_prepareDisplayForm');
+		return false
+	}
 
 
-    function getDataTableHtml($this) {
-        var tmpObjects = $this.jfsp("getArrayObjects"),
-			sReturn = "<table cellpadding='0' cellspacing='0' class='jfspTable' border='0' >" + getDataTableHeaderHtml($this);
-
-        sReturn += "<tbody>";
-        $.each(tmpObjects, function (index, item) {
-            sReturn += getDataTableRowHtml($this, item);
-        });
-        sReturn += "</tbody></table>";
-        return sReturn;
-    }
-
-    function getDataTableHeaderHtml($this) {
-        var settings = $this.data("settings"),
-			tmpObjects = $this.jfsp("getArrayObjects"),
-			key = "",
-			colspan = 1,
-			sReturnHead = "<thead><tr>",
-			sReturnFoot = "<tfoot><tr>";
-
-        if (settings.dataListFields.length !== 0) {
-            if (settings.dataFieldConfig.length !== 0) {
-                $.each(settings.dataFieldConfig, function (index, item) {
-                    if ($.inArray(item.field, settings.dataListFields) > -1) {
-                        sReturnHead += "<th >" + item.title + "</th>";
-                        colspan++;
-                    }
-                });
-            } else {
-                for (key in tmpObjects[0]) {
-                    if (tmpObjects[0].hasOwnProperty(key)) {
-                        if ($.inArray(key, settings.dataListFields) > -1) {
-                            sReturnHead += "<th >" + key + "</th>";
-                            colspan++;
-                        }
-                    }
-                }
-            }
-        } else {
-            if (settings.dataFieldConfig.length !== 0) {
-                $.each(settings.dataFieldConfig, function (index, item) {
-                    sReturnHead += "<th >" + item.title + "</th>";
-                    colspan++;
-                });
-            } else {
-                for (key in tmpObjects[0]) {
-                    if (tmpObjects[0].hasOwnProperty(key)) {
-                        sReturnHead += "<th >" + key + "</th>";
-                        colspan++;
-                    }
-                }
-            }
-
-        }
-
-        sReturnHead += "<th></th></tr></thead>";
-        sReturnFoot += "<td colspan='" + colspan + "' ><a href='javascript:;' class='jfspAddItemLink' title='Add Item' ><span>Add Item</span><i class='icon-plus' ></i></a></td></tfoot>";
-
-        return sReturnHead + sReturnFoot;
-    }
 
 
-    function getDataTableRowHtml($this, item) {
-        var key = "",
-			settings = $this.data("settings"),
-			dialogId = $this.attr("id") + "Tr",
-			sReturn = "<tr id='" + dialogId + "_" + item.id + "' >";
 
-        if (settings.dataListFields.length !== 0) {
-            $.each(settings.dataListFields, function (idx, fielditem) {
-                sReturn += "<td>" + item[fielditem] + "</td>";
-            });
-        } else {
-            for (key in item) {
-                if (item.hasOwnProperty(key)) {
-                    sReturn += "<td>" + item[key] + "</td>";
-                }
-            }
-        }
-        sReturn += "<td>";
-
-        if (settings.showMove) {
-            sReturn += "<a href='javascript:;' class='downButton icon-chevron-down' title='Down' data-id='" + item.id + "'><span>Down</span></a>";
-            sReturn += "<a href='javascript:;' class='upButton icon-chevron-up' title='Up' data-id='" + item.id + "'><span>Up</span></a>";
-        } else {
-            sReturn += "<i class='icon-blank'></i><i class='icon-blank'></i>";
-        }
-
-        if (settings.showEdit) {
-            sReturn += "<a href='javascript:;' class='editButton icon-pencil' title='Edit' data-id='" + item.id + "'><span>Edit</span></a>";
-        } else {
-            sReturn += "<i class='icon-blank'></i>";
-        }
-
-        if (settings.showDelete) {
-            sReturn += "<a href='javascript:;' class='removeButton icon-remove' title='Remove' data-id='" + item.id + "'><span>Remove</span></a>";
-        } else {
-            sReturn += "<i class='icon-blank'></i>";
-        }
-
-        sReturn += "</td></tr>";
-        return sReturn;
-    }
 
     function renderDialog($this) {
         var dialogId = $this.attr("id") + "Dialog",
@@ -832,8 +636,6 @@
                 }
             }
         }
-
-
 
         $("#" + $this.attr("id") + "Dialog .jfspDialogItems").append(sHtml);
         $("#" + $this.attr("id") + "Dialog .required label").append("<i>*</i>");
