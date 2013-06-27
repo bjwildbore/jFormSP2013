@@ -32,150 +32,15 @@ $(document).ready(function(){
 
 	$('#jformManager').jfsp({
 	
-		types:{
-			clinical_course: {
-				dataFieldConfig	: [ 
-					{'field':'ID',   'title':'ID',        'type':'text','attributes':''}, 
-					{'field':'Title','title':'Title',     'type':'text','attributes':''} ,
-					{'field':'Region','title':'Region',  'required':true,  'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					{'field':'Location','title':'Location',   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					{'field':'StartDate',	'title':'Ends',	 'required':true,	'type':'date','attributes':''},		
-					{'field':'EndDate',  	'title':'Starts',  'required':true,  'type':'date','attributes':''},
-					{'field':'Tutors','title':'Tutors',   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},		
-					{'field':'Status','title':'Status',  'required':true,  'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},
-					{'field':'CourseType','title':'Type', 'required':true,   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},					
-					{'field':'Vehicle','title':'Vehicle',   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					{'field':'Venue',      	'title':'Venue',   	'type':'text','attributes':''},
-					{'field':'Accommodation',      	'title':'Accommodation',   	'type':'text','attributes':''},
-					{'field':'Equipment',      	'title':'Equipment',   	'type':'text','attributes':''},
-					{'field':'Flights',      	'title':'Flights',   	'type':'text','attributes':''},
-					{'field':'CourseRegister','title':'Course Register',   	'type':'text','attributes':''},
-
-					{'field':'Notes',      	'title':'Notes',   	'type':'text','attributes':''},
-					{'field':'Attachments',	'title':'Attachments','type':'text','attributes':''}	
-				]			
-			},
-			
-			clinical_date: {
-				dataFieldConfig	: [ 
-					{'field':'ID',   'title':'ID',        'type':'text','attributes':''}, 
-					{'field':'Title','title':'Title',     'type':'text','attributes':''} ,
-					{'field':'Region','title':'Region',   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					{'field':'Location','title':'Location',   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					{'field':'StartDate',	'title':'Ends',	 'required':true,	'type':'date','attributes':''},		
-					{'field':'EndDate',  	'title':'Starts',  'required':true,  'type':'text','attributes':''}
-					
-				]				
-			},
-			
-			clinical_availability: {
-				dataFieldConfig	: [ 
-					{'field':'ID',   'title':'ID',        'type':'text','attributes':''}, 
-					{'field':'Title','title':'Title',     'type':'text','attributes':''} ,
-					{'field':'Tutor','title':'Tutor',  'required':true,   'type':'radio',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					
-					{'field':'Region','title':'Region',   'type':'radio',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					
-					{'field':'Location','title':'Location',   'type':'radio',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					
-					{'field':'AvailabilityType','title':'Type', 'required':true,   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					
-					{'field':'StartDate','title':'Ends', 'required':true,		'type':'date','attributes':''},		
-					{'field':'EndDate','title':'Starts', 'required':true,   'type':'text','attributes':''},
-					{'field':'Notes','title':'Notes',   	'type':'text','attributes':''}	
-				]					
-			},
-			
-			clinical_resource: {
-				hiddenFields : ['ID'],
-				dataFieldConfig	: [ 
-					{'field':'ID',   'title':'ID', 'type':'text','attributes':''}, 
-					{'field':'Title','title':'Title', 'required':true, 'type':'text','attributes':''} ,
-					{'field':'Region','title':'Region',   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					{'field':'Location','title':'Location',   'type':'text',
-						options:[
-							{'label':'Male'  ,'value':'m' ,'def':'0'},
-							{'label':'Female','value':'f' ,'def':'0'}							
-						]
-					},	
-					{'field':'StartDate',	'title':'Ends', 'required':true,		'type':'date','attributes':''},		
-					{'field':'EndDate',  	'title':'Starts', 'required':true,   'type':'text','attributes':''},
-					{'field':'Notes',      	'title':'Notes',   	'type':'text','attributes':''},
-					{'field':'Attachments',	'title':'Attachments','type':'text','attributes':''}	
-				]			
-			},
-			
-		
-		
+		lists:{
+			clinical_course: {listName: 'clinical_course',allowAttachments:true},			
+			clinical_date: {listName: 'clinical_date',allowAttachments:true},
+			clinical_availability: {listName: 'clinical_availability',allowAttachments:true},				
+			clinical_resource: {listName: 'clinical_resource',allowAttachments:true}
 		}	
 	
 	});
-	
+/*	
 	$('#addButton').click(function(){
 		$('#jformManager').jfsp('showDisplayForm',{});
 	});
@@ -187,7 +52,7 @@ $(document).ready(function(){
 	$('#deleteButton').click(function(){
 		$('#jformManager').jfsp('removeItem',{id:1});
 	});
-
+*/
 
 });
 	
