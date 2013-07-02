@@ -39,9 +39,9 @@
 
 			$('body').on('click','a.jsfpSubmit', function(e){
 				var $link = $(e.target),
-					isNew = $link.attr('data-isNew'),
+					isNew = $link.attr('data-isnew'),
 					listName = $link.attr('data-list'),
-					id= $link.attr('data-itemId');
+					id= $link.attr('data-itemid');
 					
 				_submitForm($this,isNew,id,listName);
 				$.modal.close();
@@ -208,10 +208,13 @@
 		var setting = $this.data('settings'),
 			valuePairs = _getValuePairs($this);		
 		
-		//console.log('submitForm', isNew,id,listName);
-		
-		if(isNew == true){
-		/*
+		console.log('submitForm', isNew,id,listName);
+		console.log('submitForm', valuePairs );
+
+		if(isNew == 'true'){
+		console.log('spAdd');
+			//valuePairs = [['Title','New 1']];
+			//todo radio if empty undefined dont get value
 			$().SPServices({
 				operation: "UpdateListItems",					
 				listName: listName,				
@@ -221,19 +224,22 @@
 					console.log(xData,Status)
 					return true;
 				}
-			});		
+			});
+	
 			
-*/
+
 	
 		} else {
 			//console.log('UpdateListItems',id,listName);
 			//console.log(valuePairs );
-			
+			console.log('spUpdate');
+
 			//valuePairs = [['myCheckChoice','b;#b;#a;#a']];
 			
 			$().SPServices({
 				operation: "UpdateListItems",					
 				listName: listName,
+				asynch: false,
 				ID:id,
 				batchCmd: "Update",					
 				valuepairs: valuePairs ,
@@ -378,12 +384,12 @@
 		if(isNew){
 			sHtml +=  '<div class="jsfpDialogTitle">'+ list.title + ': New item </div>';	
 			sHtml +=  '<div class="jsfpDialogTitleButtons"><a href="javascript:void(0)" class="jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
-			sHtml +=  '<a href="javascript:void(0)" data-isNew="true" data-itemID="" data-list="'+listName +'" class="jsfpSubmit"><i class="icon-ok-circle"></i> Submit</a> </div>';	
+			sHtml +=  '<a href="javascript:void(0)" data-isnew="true" data-itemid="" data-list="'+listName +'" class="jsfpSubmit"><i class="icon-ok-circle"></i> Submit</a> </div>';	
 
 		} else {
 			sHtml += '<div class="jsfpDialogTitle">'+ list.title + ': Edit item </div>';
 			sHtml +=  '<div class="jsfpDialogTitleButtons"><a href="javascript:void(0)" class="jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
-			sHtml +=  '<a href="javascript:void(0)" data-isNew="false" data-itemID="'+id+'" data-list="'+listName +'" class="jsfpSubmit"><i class="icon-ok-circle"></i> Update</a> </div>';	
+			sHtml +=  '<a href="javascript:void(0)" data-isnew="false" data-itemid="'+id+'" data-list="'+listName +'" class="jsfpSubmit"><i class="icon-ok-circle"></i> Update</a> </div>';	
 
 		}
 		sHtml += '</div><div id="jsfpDialogBody" class="jsfpDialogBody">';
