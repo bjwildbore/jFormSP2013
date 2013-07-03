@@ -1,6 +1,15 @@
 ; (function ($) {
     "use strict";
 
+	//TODO: validation
+	//TODO: Attachments Display
+	//TODO: Attachments Upload : Drag n drop...
+	//TODO: Attachments Delete
+	
+	//TODO: Listing Items
+	//TODO: Tidy up callback functions
+	//TODO: remove modal dependencies... or include in library
+	
     var methods = {
         init: function (options) {
 			
@@ -36,8 +45,7 @@
 
 			_parseLists($this, settings);
 			
-			console.log(settings);
-			
+			console.log(settings);		
             						
             $this.data("settings", settings);	
            // $this.data('test','test1');		
@@ -48,11 +56,13 @@
 					isNew = $link.attr('data-isnew'),
 					listName = $link.attr('data-list'),
 					id= $link.attr('data-itemid');
-					
-				if(_submitForm($this,isNew,id,listName)){
-					_closeDialog($this);
-					_feedback($this,'Item submitted successfully');
-					
+				
+				if(_validateInput($this,listName)){
+					if(_submitForm($this,isNew,id,listName)){
+						_closeDialog($this);
+						_feedback($this,'Item submitted successfully');
+						
+					}
 				}
 			
 			})
@@ -137,14 +147,17 @@
 
     /* Private functions */
 
+	
+	function _validateInput($this){
+	}
+	
 	function _closeDialog($this){
 		var settings = $this.data('settings');
 		if (typeof settings.closeDialog === "function") {
             if (!settings.closeDialog .call(this, $this)) {
                 return false;
             }
-        }
-	
+        }	
 	}
 
 	function _feedback($this,msg){
@@ -251,8 +264,6 @@
 
 
 
-
-
   function _escapeHtml(string) {
     var entityMap = {
     "&": "&amp;",
@@ -267,7 +278,6 @@
       return entityMap[s];
     });
   }
-
 
 
 	function _removeItem($this,id,listName){
