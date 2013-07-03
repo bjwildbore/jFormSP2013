@@ -1,0 +1,120 @@
+
+	<link href="http://netdna.bootstrapcdn.com/font-awesome/3.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<script src="/sites/bjw/dev/jform/lib/jFormSP2013/jquery.jformsp.js"></script>
+	
+	<script src="/sites/bjw/dev/jform/lib/jFormSP2013/bootstrap-datetimepicker.js"></script>
+	<link href="/sites/bjw/dev/jform/lib/jFormSP2013/jquery.jformsp.css" rel="stylesheet">
+	<link href="/sites/bjw/dev/jform/lib/jFormSP2013/datetimepicker.css" rel="stylesheet">
+
+	
+	<style>
+	.button{
+		background-color:#ccc;
+		border: 1px solid #aaa;
+		padding:5px;
+		margin:5px;
+		width:100px;
+	}
+	
+	.button:hover{
+		background-color:#eee;
+		
+	}
+	</style>
+	
+	<script>
+
+$(document).ready(function(){
+
+	
+	/*
+	//getList
+	$().SPServices({
+	  operation: "GetList",
+	  listName: listName ,
+	  completefunc: function(xData, Status) {
+	    console.log(xData);
+	    $(xData.responseXML).find("Fields > Field").each(function() {
+	      var $node = $(this);
+	     // console.log( "Type: " + $node.attr("Type") + " StaticName: " + $node.attr("StaticName") );
+	    });
+	  }
+	});
+	*/
+	
+
+
+	$('#jformManager').jfsp({		
+		lists: {
+			list1 : {listName: 'list1',title:'List One', allowAttachments:true}
+			//{listName: 'region',allowAttachments:false},			
+			//{listName: 'People',allowAttachments:false},
+		},
+		"showDialog": function (innerHtml) {
+			console.log('showDialog');
+			
+			$('#modalDialog').empty().append(innerHtml);
+
+			$('#modalDialog').modal('show');			
+			
+			console.log('showDialog');		
+			
+			/*
+			$('input[type="datetime"]').appendDtpicker({
+				minuteInterval:'15'	,
+				current: $(this).val()		
+			});
+			*/
+			
+			$('input[type="datetime"]').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
+			
+
+		},
+		"closeDialog": function () {
+			console.log('closeDialogcust');			
+			$('#modalDialog').empty();
+			$('#modalDialog').modal('hide');					
+
+		}			
+	});
+	
+	
+	$('#viewButton').click(function(){
+		$('#jformManager').jfsp('showForm','read',{id:2,list:'list1'});
+	});
+
+	$('#addButton').click(function(){
+		$('#jformManager').jfsp('showForm','add',{list:'list1'});
+	});
+
+	
+	$('#updateButton').click(function(){
+		$('#jformManager').jfsp('showForm','edit',{id:2,list:'list1'});
+	});
+	
+	$('#deleteButton').click(function(){
+		$('#jformManager').jfsp('showForm','remove',{id:2,list:'list1'});
+	});
+	
+	$('#viewButton').click();
+	
+	
+	
+	
+	});	
+	</script>
+	
+  
+
+	
+<div id='jformManager' ></div>
+<div id='modalDialog' class="modal" style="display:none" >
+</div>
+
+<div id='viewButton'    class='button'><i class='icon-file'></i> View</div>
+<div id='addButton'    class='button'><i class='icon-plus'></i> Add</div>
+<div id='updateButton' class='button'><i class='icon-check'></i> Update</div>
+<div id='deleteButton' class='button'><i class='icon-minus'></i> Delete</div>
+	
+<a href="http://spdev/sites/bjw/Lists/list1/AllItems.aspx" target="_blank"> List </a>

@@ -21,6 +21,8 @@
 			    "afterClickCancel": function () { return true; },
 			    
 			    "afterDialogShow": function () { return true; },
+			    "feedback": function (message) { console.log(message); return true; },
+
 				
 			    "afterObjectAdd": function () { return true; },
 			    "afterObjectRemove": function () { return true; },
@@ -38,21 +40,56 @@
            // $this.data('test','test1');		
 
 			$('body').on('click','a.jsfpSubmit', function(e){
+				console.log('submitclick')
 				var $link = $(e.target),
 					isNew = $link.attr('data-isnew'),
 					listName = $link.attr('data-list'),
 					id= $link.attr('data-itemid');
 					
-				_submitForm($this,isNew,id,listName);
-				$.modal.close();
+				if(_submitForm($this,isNew,id,listName)){
+					_closeDialog($this);
+					_feedback($this,'Item submitted successfully');
+					
+				}
 			
-			})
-			
-			$('body').on('click','a.jsfpCancel', function(){
-				console.log('close dialog');
-				$.modal.close();			
 			})
 
+
+			$('body').on('click','a.jsfpRemove', function(e){
+				console.log('submitclick')
+				var $link = $(e.target),					
+					listName = $link.attr('data-list'),
+					id= $link.attr('data-itemid');
+					
+				if(_removeItem($this,id,listName)){
+					_closeDialog($this);
+					_feedback($this,'Item removed successfully');
+					
+				}
+			
+			})
+
+			
+			$('body').on('click','a.jsfpCancel', function(){
+				_closeDialog($this);			
+			})
+
+			$('body').on('click','a.jsfpEditItem', function(){
+				var $button = $(this);				
+				_closeDialog($this);
+				$this.jfsp('showForm','edit',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});
+						
+			})
+
+			$('body').on('click','a.jsfpTemplateItem', function(){
+				var $button = $(this);				
+				_closeDialog($this);
+				$this.jfsp('showForm','add',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});						
+			})
+			
+			
+			
+			
 			
             if (typeof settings.afterInit === "function") {
                 if (!settings.afterInit.call(this, $this)) {
@@ -97,18 +134,38 @@
 
     /* Private functions */
 
+	function _closeDialog($this){
+		var settings = $this.data('settings');
+		if (typeof settings.closeDialog === "function") {
+            if (!settings.closeDialog .call(this, $this)) {
+                return false;
+            }
+        }
+	
+	}
+
+	function _feedback($this,msg){
+		var settings = $this.data('settings');
+		if (typeof settings.feedback=== "function") {
+            if (!settings.feedback.call(this, msg)) {
+                return false;
+            }
+        }
+	
+	}
+
+
+
 	function _getFormValue(id,$field){
 		var type = $field.attr('data-type'),
 			format = $field.attr('data-format'),
-			
-
 			value = '';
 			
 		switch(type){	
 		
 			case 'Boolean':
 				value = $('input:radio[name='+id+']:checked').val();
-				console.log('Boolean',value);
+				//console.log('Boolean',value);
 				break;
 
 			case 'Lookup':
@@ -126,13 +183,13 @@
 				//todo: fix the breaky thing
 				value = $field.find('textarea').val();
 				value = _escapeHtml(value)		;
-				console.log(value);
+				//console.log(value);
 				//value='test';
 		
 				break;
 			case 'MultiChoice'://checkboxes				
 			case 'LookupMulti': //checkboxes
-				console.log(type);
+				//console.log(type);
 				value = [];
 				$('input:checkbox[name='+id+']:checked').each(function(){
 					var $cbox = $(this);	
@@ -144,7 +201,13 @@
 
 				break;
 				
-			
+			case 'DateTime':
+				value = $field.find('input').val();
+
+				if(value != ''){
+					value += ':00'
+				}
+				break;
 	
 			default:
 				//console.log(type);
@@ -153,8 +216,7 @@
 		}		
 		
 
-		if(value != ''){
-		
+		if(value != ''){		
 			return [id,value];
 		}
 		return false;
@@ -164,7 +226,7 @@
 	function _getValuePairs($this){
 		var aReturn = [];
 		
-		$('#jsfpDialogBody .jsfpField').each(function(){
+		$('div.jsfpField').each(function(){
 			var $field = $(this),
 				pair = [],
 				id = $field.attr('data-id');
@@ -204,12 +266,42 @@
   }
 
 
+
+	function _removeItem($this,id,listName){
+		var setting = $this.data('settings'),
+			valuePairs = _getValuePairs($this),		
+			bReturn = true;	
+			console.log('removeItem');
+
+			
+		$().SPServices({
+			operation: "UpdateListItems",					
+			listName: listName,
+			asynch: false,
+			ID:id,
+			batchCmd: "Delete",					
+			completefunc: function (xData, Status) {										
+				$(xData.responseXML).SPFilterNode("ErrorText").each(function() { 
+	        		console.log(this);
+	        		alert($(this).text());
+	        		bReturn = false;
+	        	});							
+				return bReturn;
+			}
+		});
+
+		
+		return bReturn;
+	}
+
+
+
+
 	function _submitForm($this,isNew,id,listName){
 		var setting = $this.data('settings'),
-			valuePairs = _getValuePairs($this);		
-		
-		console.log('submitForm', isNew,id,listName);
-		console.log('submitForm', valuePairs );
+			valuePairs = _getValuePairs($this),		
+			bReturn = true;	
+
 
 		if(isNew == 'true'){
 		console.log('spAdd');
@@ -221,8 +313,12 @@
 				batchCmd: "New",					
 				valuepairs: valuePairs ,
 				completefunc: function (xData, Status) {
-					console.log(xData,Status)
-					return true;
+					$(xData.responseXML).SPFilterNode("ErrorText").each(function() { 
+		        		console.log(this);
+		        		alert($(this).text());
+		        		bReturn = false;
+		        	});							
+					return bReturn;
 				}
 			});
 	
@@ -243,14 +339,18 @@
 				ID:id,
 				batchCmd: "Update",					
 				valuepairs: valuePairs ,
-				completefunc: function (xData, Status) {
-					console.log(xData,Status)
-					return true;
+				completefunc: function (xData, Status) {										
+					$(xData.responseXML).SPFilterNode("ErrorText").each(function() { 
+		        		console.log(this);
+		        		alert($(this).text());
+		        		bReturn = false;
+		        	});							
+					return bReturn;
 				}
 			});
 		}
 		
-		
+		return bReturn;
 	}
 
 
@@ -335,8 +435,8 @@
 		var sReturn = "";
 		
 		switch(type){
-			case ('display'):
-				sReturn = _getDisplayHTML($this,obj);
+			case ('read'):
+				sReturn = _getReadHTML($this,obj);
 				break;
 
 			case ('add'):
@@ -356,11 +456,43 @@
 		return sReturn;
 	}
 
-	function _getDisplayFormHTML($this,obj){
-		var sHtml = 'getDisplayFormHTML';
+	function _getReadHTML($this,obj){
+	console.log('getReadHTML');
+		var sHtml = '',
+			settings = $this.data('settings'),
+			id = obj.id,	
+			i=0,		
+			list = settings.lists[obj.list],
+			listName = obj.list,
+
+			fields = list.fields,
+			lenFields = fields.length,			
+			item = _getListItem(id,list.listName),
+			objAttr = item.attributes;	
+			
+		console.log(list, list.title );		
 		
-		return sHtml;
+		sHtml += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
+		sHtml +=  '<h3>'+ list.title + ' Item</h3>';		
 	
+		sHtml += '</div><div class="modal-body">';	
+				
+		for(var i = 0; i < lenFields ; i++) {
+			sHtml += _getFieldReadHTML(fields[i],objAttr );			
+		}	
+			
+		sHtml += '</div>';	
+
+		sHtml +=  '<div class="modal-footer">';				
+		sHtml +=  '<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
+		sHtml +=  '<a href="javascript:void(0)" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-inverse jsfpTemplateItem"><i class="icon-copy"></i> Use as template</a>';			
+
+		sHtml +=  '<a href="javascript:void(0)" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-primary jsfpEditItem"><i class="icon-edit"></i> Edit</a></div>';			
+		sHtml += '</div>';	
+
+
+				
+		return sHtml;
 	}
 
 
@@ -378,45 +510,83 @@
 			item = _getListItem(id,list.listName),
 			objAttr = item.attributes;	
 			
-		console.log(list, list.title );
-		sHtml += '<div class="jsfpDialogTitleBar">';
+		console.log(list, list.title );		
+		
+		sHtml += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
 
 		if(isNew){
-			sHtml +=  '<div class="jsfpDialogTitle">'+ list.title + ': New item </div>';	
-			sHtml +=  '<div class="jsfpDialogTitleButtons"><a href="javascript:void(0)" class="jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
-			sHtml +=  '<a href="javascript:void(0)" data-isnew="true" data-itemid="" data-list="'+listName +'" class="jsfpSubmit"><i class="icon-ok-circle"></i> Submit</a> </div>';	
-
+			sHtml +=  '<h3>'+ list.title + ': New item </h3>';	
+			objAttr.ID = ''; 
 		} else {
-			sHtml += '<div class="jsfpDialogTitle">'+ list.title + ': Edit item </div>';
-			sHtml +=  '<div class="jsfpDialogTitleButtons"><a href="javascript:void(0)" class="jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
-			sHtml +=  '<a href="javascript:void(0)" data-isnew="false" data-itemid="'+id+'" data-list="'+listName +'" class="jsfpSubmit"><i class="icon-ok-circle"></i> Update</a> </div>';	
-
+			sHtml += '<h3>'+ list.title + ': Edit item </h3>';
 		}
-		sHtml += '</div><div id="jsfpDialogBody" class="jsfpDialogBody">';
-		
+	
+		sHtml += '</div><div class="modal-body">';	
 				
 		for(var i = 0; i < lenFields ; i++) {
 			sHtml += _getFieldHTML(fields[i],objAttr );			
 		}		
-		sHtml += '</div>';			
+		sHtml += '</div>';	
+
+		sHtml +=  '<div class="modal-footer">';	
+		if(isNew){			
+			sHtml +=  '<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
+			sHtml +=  '<a href="javascript:void(0)" data-isnew="true" data-itemid="" data-list="'+listName +'" class="btn btn-primary  jsfpSubmit"><i class="icon-ok-circle"></i> Submit</a> </div>';	
+			
+		} else {			
+			sHtml +=  '<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
+			sHtml +=  '<a href="javascript:void(0)" data-isnew="false" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-primary jsfpSubmit"><i class="icon-ok-circle"></i> Update</a> </div>';	
+			
+
+		}
+		sHtml += '</div>';	
+
+
+				
 		return sHtml;
 	}
 
 
 	function _getRemoveFormHTML($this,obj){
-		var sHtml = 'getRemoveFormHTML';
 		
-		return sHtml;
+		var sHtml = '',
+			settings = $this.data('settings'),
+			id = obj.id,	
+			i=0,		
+			list = settings.lists[obj.list],
+			listName = obj.list,
+
+			fields = list.fields,
+			lenFields = fields.length,			
+			item = _getListItem(id,list.listName),
+			objAttr = item.attributes;	
+			
+		console.log(list, list.title );		
+		
+		sHtml += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
+
 	
+		sHtml +=  '<h3>'+ list.title + ': Remove item </h3>';	
+
+	
+		sHtml += '</div><div class="modal-body">';	
+				
+		for(var i = 0; i < lenFields ; i++) {
+			sHtml += _getFieldReadHTML(fields[i],objAttr );			
+		}		
+		sHtml += '</div>';	
+
+		sHtml +=  '<div class="modal-footer">';				
+			sHtml +=  '<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
+			sHtml +=  '<a href="javascript:void(0)" data-isnew="false" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-warning jsfpRemove"><i class="icon-trash"></i> Remove</a> </div>';	
+		sHtml += '</div>';	
+
+
+				
+		return sHtml;
 	}
 
 
-	
-	
-
-
-	
-	
 
 	function _getListItem(id, list){
 		var oReturn = {id:'', attributes:{}}; //return empty if no id specified	
@@ -449,6 +619,58 @@
 		return value;
 	}
 
+	function _getFieldReadHTML(field,values){
+		var sReturn = '',
+			fieldAttr =  field.attributes,
+			type = fieldAttr.Type,
+			sRequired = '',
+			aValues=[],
+			format= _safeValue(fieldAttr.Format),
+			value = _safeValue(values[fieldAttr.StaticName]);		
+
+		if(fieldAttr.Required == 'TRUE'){
+			sRequired =' <span>(Required)</span> '
+		}
+
+		
+		switch(type){				
+			
+			case 'Boolean':
+				break;
+			
+			case 'Choice':
+				aValues = _formatOWSItem(value,0);
+				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <b>'+type+'</b> <span class="jsfpReadTitle">'+aValues.join(',') +'</span></div>';	
+
+				break;
+			case 'Note':				
+				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <b>'+type+'</b><span class="jsfpReadTitle"><pre>'+_escapeHtml(value) +'</pre></span></div>';	
+
+				break;
+
+
+			case 'Lookup':	
+			case 'MultiChoice'://checkboxes				
+			case 'LookupMulti': //checkboxes
+				aValues = _formatOWSItem(value,1)
+
+				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadTitle">'+aValues.join(',') +'</span></div>';	
+				break;	
+			/*
+			case 'Attachments':
+				sReturn += 'TODO: '+type + ' ' + field.DisplayName + ' = ' + value + '<br />';
+				break;
+			*/		
+			default:
+				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadTitle">'+value+'</span></div>';						
+				break;
+		}
+		
+		
+		
+		
+		return sReturn;
+	}
 
 
 	function _getFieldHTML(field,values){
@@ -471,7 +693,8 @@
 				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><input type="text" id="jfsp_'+fieldAttr.StaticName+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" disabled=true /></div>  ';
 				sReturn += '</div>';
 				break;
-			
+				
+			case 'URL':
 			case 'Text':
 				sReturn += '<div class="jsfpField" data-type="'+type+'" data-id="'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" >';
 				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><input type="text"  id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" /></div>  ';
@@ -479,8 +702,9 @@
 				break;
 
 			case 'DateTime':
+				value = value.substring(0,16);
 				sReturn += '<div class="jsfpField" data-type="'+type+'" data-id="'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" >';
-				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><input type="datetime" placeholder="dd/mm/yyyy hh:mm am/pm" id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" /></div>  ';
+				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><input type="datetime" placeholder="dd/mm/yyyy hh:mm" id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" /></div>  ';
 				sReturn += '</div>';
 				break;
 			
@@ -560,6 +784,7 @@
 				break;
 			*/		
 			default:
+				console.log('type' ,type)
 				//sReturn += 'TODO: '+type + ' ' + field.DisplayName + ' = ' + value + '<br />';				
 				break;
 		}
