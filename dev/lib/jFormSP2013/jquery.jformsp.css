@@ -103,3 +103,19 @@
 .jsfpField[data-id='ID']{display:none;}
 */
 #modalDialog button.close{min-width:1em !important}
+
+.jfspHint{
+	display: block;
+    font-size: 0.9em;
+    width: 100%;}
+    
+.jsfpReadLabel{
+color:#16499A; 
+display:inline-block;
+padding-right:10px;	
+margin-bottom:15px;
+}
+    
+.jsfpReadValue{
+	
+}

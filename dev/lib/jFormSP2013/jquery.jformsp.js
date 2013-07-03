@@ -11,6 +11,7 @@
 			    "afterListParse": function () { return true; },
 			    "showDialog": function (innerHtml) { return true; },
 			    "closeDialog": function (innerHtml) { return true; },
+				
 
 
 
@@ -35,7 +36,9 @@
 
 			_parseLists($this, settings);
 			
-						
+			console.log(settings);
+			
+            						
             $this.data("settings", settings);	
            // $this.data('test','test1');		
 
@@ -367,7 +370,13 @@
 	  			if (lists.hasOwnProperty(listName )) {	
 			
 					lists[listName].fields = [];
-					
+			
+
+		            if (lists[listName].ignoreFields.length) {
+		                lists[listName].ignoreFields = lists[listName].ignoreFields.split(",");
+		            }
+
+		
 					$().SPServices({
 			  			operation: "GetList",
 			  			listName: listName ,
@@ -457,14 +466,13 @@
 	}
 
 	function _getReadHTML($this,obj){
-	console.log('getReadHTML');
-		var sHtml = '',
+			var sHtml = '',
 			settings = $this.data('settings'),
 			id = obj.id,	
 			i=0,		
 			list = settings.lists[obj.list],
 			listName = obj.list,
-
+			field = {},
 			fields = list.fields,
 			lenFields = fields.length,			
 			item = _getListItem(id,list.listName),
@@ -478,7 +486,10 @@
 		sHtml += '</div><div class="modal-body">';	
 				
 		for(var i = 0; i < lenFields ; i++) {
-			sHtml += _getFieldReadHTML(fields[i],objAttr );			
+			field = fields[i];
+			if (    (list.ignoreFields.length > 1 && $.inArray(field.attributes.StaticName, list.ignoreFields) <= -1) ||  field.attributes.Required != 'TRUE'    ) {
+				sHtml += _getFieldReadHTML(field,objAttr );			
+			}
 		}	
 			
 		sHtml += '</div>';	
@@ -504,7 +515,7 @@
 			i=0,		
 			list = settings.lists[obj.list],
 			listName = obj.list,
-
+			field = {},
 			fields = list.fields,
 			lenFields = fields.length,			
 			item = _getListItem(id,list.listName),
@@ -524,7 +535,10 @@
 		sHtml += '</div><div class="modal-body">';	
 				
 		for(var i = 0; i < lenFields ; i++) {
-			sHtml += _getFieldHTML(fields[i],objAttr );			
+			field = fields[i];
+			if (    (list.ignoreFields.length > 1 && $.inArray(field.attributes.StaticName, list.ignoreFields) <= -1) ||  field.attributes.Required != 'TRUE'    ) {
+				sHtml += _getFieldHTML(field,objAttr );			
+			}
 		}		
 		sHtml += '</div>';	
 
@@ -555,8 +569,8 @@
 			i=0,		
 			list = settings.lists[obj.list],
 			listName = obj.list,
-
 			fields = list.fields,
+			field = {},
 			lenFields = fields.length,			
 			item = _getListItem(id,list.listName),
 			objAttr = item.attributes;	
@@ -572,7 +586,10 @@
 		sHtml += '</div><div class="modal-body">';	
 				
 		for(var i = 0; i < lenFields ; i++) {
-			sHtml += _getFieldReadHTML(fields[i],objAttr );			
+			field = fields[i];
+			if (    (list.ignoreFields.length > 1 && $.inArray(field.attributes.StaticName, list.ignoreFields) <= -1) ||  field.attributes.Required != 'TRUE'    ) {
+	        	sHtml += _getFieldReadHTML(field,objAttr );
+	      	}			
 		}		
 		sHtml += '</div>';	
 
@@ -632,19 +649,17 @@
 			sRequired =' <span>(Required)</span> '
 		}
 
-		
 		switch(type){				
 			
-			case 'Boolean':
-				break;
+			
 			
 			case 'Choice':
 				aValues = _formatOWSItem(value,0);
-				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <b>'+type+'</b> <span class="jsfpReadTitle">'+aValues.join(',') +'</span></div>';	
+				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadValue">'+aValues.join(',') +'</span></div>';
 
 				break;
 			case 'Note':				
-				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <b>'+type+'</b><span class="jsfpReadTitle"><pre>'+_escapeHtml(value) +'</pre></span></div>';	
+				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadValue"><pre>'+_escapeHtml(value) +'</pre></span></div>';	
 
 				break;
 
@@ -654,15 +669,18 @@
 			case 'LookupMulti': //checkboxes
 				aValues = _formatOWSItem(value,1)
 
-				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadTitle">'+aValues.join(',') +'</span></div>';	
+				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadValue">'+aValues.join(',') +'</span></div>';	
 				break;	
 			/*
 			case 'Attachments':
 				sReturn += 'TODO: '+type + ' ' + field.DisplayName + ' = ' + value + '<br />';
 				break;
-			*/		
+			*/
+			case 'Boolean':
+				value = (value ==1)?'yes':'no';
+						
 			default:
-				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadTitle">'+value+'</span></div>';						
+				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadValue">'+value+'</span></div>';						
 				break;
 		}
 		
@@ -690,28 +708,43 @@
 			
 			case 'Counter':
 				sReturn += '<div class="jsfpField" data-type="'+type+'" data-id="'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" >';
-				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><input type="text" id="jfsp_'+fieldAttr.StaticName+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" disabled=true /></div>  ';
+				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label>';
+				sReturn +=  '<input type="text" id="jfsp_'+fieldAttr.StaticName+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" disabled=true /></div>  ';
 				sReturn += '</div>';
 				break;
 				
-			case 'URL':
+		
 			case 'Text':
 				sReturn += '<div class="jsfpField" data-type="'+type+'" data-id="'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" >';
-				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><input type="text"  id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" /></div>  ';
+				sReturn += '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label>';				
+				sReturn +=  '<input type="text"  id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" /></div>  ';
+				sReturn += '</div>';
+				break;
+			
+			case 'URL':
+			
+				sReturn += '<div class="jsfpField" data-type="'+type+'" data-id="'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" >';
+				sReturn += '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label>';
+				sReturn += '<span class="jfspHint">Format: <i>http://google.com, google</i></span>';
+				sReturn +=  '<input type="text"  id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" /></div>  ';
 				sReturn += '</div>';
 				break;
 
+			
 			case 'DateTime':
 				value = value.substring(0,16);
 				sReturn += '<div class="jsfpField" data-type="'+type+'" data-id="'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" >';
-				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><input type="datetime" placeholder="dd/mm/yyyy hh:mm" id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" /></div>  ';
+				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label>';
+				sReturn += '<span class="jfspHint">Format: <i>2003-12-25 17:30</i></span>';
+				sReturn +=  '<input type="datetime" placeholder="dd/mm/yyyy hh:mm" id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" value="' + value + '" /></div>  ';
 				sReturn += '</div>';
 				break;
 			
 
 			case 'Note':
 				sReturn += '<div class="jsfpField" data-type="'+type+'" data-id="'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" >';
-				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><textarea type="datetime" id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" >' + value + '</textarea></div>  ';
+				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label>';
+				sReturn +=  '<textarea type="datetime" id="jfsp_'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" data-Name="'+fieldAttr.StaticName+'" >' + value + '</textarea></div>  ';
 				sReturn += '</div>';
 				break;
 				
@@ -742,7 +775,8 @@
 
 			case 'Number':
 				sReturn += '<div class="jsfpField" data-type="'+type+'" data-id="'+fieldAttr.StaticName+'" data-Required="'+fieldAttr.Required+'" >';
-				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label><input type="Number" id="jfsp_'+fieldAttr.StaticName+'"';				
+				sReturn +=  '<div><label class="jfspFieldTitle" for="jfsp_'+fieldAttr.StaticName+'">'+fieldAttr.DisplayName+ sRequired +'</label>';
+				sReturn +=  '<input type="Number" id="jfsp_'+fieldAttr.StaticName+'"';				
 				sReturn += ' min = "'+_safeValue(fieldAttr.Min)+'" ';				
 				sReturn += ' max = "'+_safeValue(fieldAttr.Max)+'" ';
 				sReturn += ' data-decimals = "'+_safeValue(fieldAttr.Decimals)+'" ';		
