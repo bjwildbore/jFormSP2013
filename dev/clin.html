@@ -47,7 +47,7 @@ $(document).ready(function(){
 
 	$('#jformManager').jfsp({		
 		lists: {
-			list1 : {listName: 'list1',title:'List One', allowAttachments:true,ignoreFields:'myCurrency,MyPerson,myNumber,myCheckChoice,myYesNo,myMultipleLine,begin,end,url,myHyperlink,myRadioChoice,People,Region'}
+			list1 : {listName: 'list1',title:'List One', allowAttachments:true,ignoreFields:'myCurrency,MyPerson,myNumber'}
 			//{listName: 'region',allowAttachments:false},			
 			//{listName: 'People',allowAttachments:false},
 		},
@@ -97,7 +97,7 @@ $(document).ready(function(){
 		$('#jformManager').jfsp('showForm','remove',{id:2,list:'list1'});
 	});
 	
-	$('#updateButton').click();
+	$('#viewButton').click();
 	
 	
 	

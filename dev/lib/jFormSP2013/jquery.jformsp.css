@@ -119,3 +119,18 @@ margin-bottom:15px;
 .jsfpReadValue{
 	
 }
+.jfspIconAttachRemove{
+	padding-left:5px;
+}
+.strike{
+	text-decoration: line-through;
+	color:#B01E00 !important;
+}
+
+#jfspAttachmentDrop{
+	width:90%;
+	padding:3%;
+	background-color:#E2EBDA;
+	border:2px dashed #7BAD18;
+}
+

@@ -1,5 +1,6 @@
 ; (function ($) {
     "use strict";
+	jQuery.event.props.push("dataTransfer");
 
 	//TODO: validation
 	//TODO: Attachments Display
@@ -58,6 +59,8 @@
 					id= $link.attr('data-itemid');
 				
 				if(_validateInput($this,listName)){
+					console.log('validated')
+
 					if(_submitForm($this,isNew,id,listName)){
 						_closeDialog($this);
 						_feedback($this,'Item submitted successfully');
@@ -83,6 +86,18 @@
 			})
 
 			
+			$('body').on('click','i.jfspIconAttachRemove', function(){
+				var $icon = $(this);
+				$icon.toggleClass('icon-remove-sign').toggleClass('icon-undo');
+				$icon.siblings().toggleClass('strike');			
+			})
+
+			$('body').on('click','i.jfspIconAttachCancel', function(){
+				$(this).parent().remove();					
+			})
+
+
+			
 			$('body').on('click','a.jsfpCancel', function(){
 				_closeDialog($this);			
 			})
@@ -90,15 +105,41 @@
 			$('body').on('click','a.jsfpEditItem', function(){
 				var $button = $(this);				
 				_closeDialog($this);
-				$this.jfsp('showForm','edit',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});
-						
-			})
+				$this.jfsp('showForm','edit',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});						
+			});
 
 			$('body').on('click','a.jsfpTemplateItem', function(){
 				var $button = $(this);				
 				_closeDialog($this);
 				$this.jfsp('showForm','add',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});						
-			})
+			});
+			
+			$('body').on('change','.jfspAttachButton', function(event){								
+				_handleFileChange($this,event.target.files);	
+				
+				$('.jfspAttachButtonWrap').html('<input type="file" name="jfspAttachButton" class="jfspAttachButton" multiple="multiple">'); 
+			
+			});
+			
+			
+
+			//Add the drag and drop functionality to the editor
+			$('body')
+				.on('drop','#jfspAttachmentDrop',	function (e) {
+					e.stopPropagation();
+					e.preventDefault();	
+					_handleFileChange($this,e.dataTransfer.files);
+				})
+				.on('dragenter dragover','#jfspAttachmentDrop', function (e) {
+					e.stopPropagation();
+					e.preventDefault();
+				});					
+			
+			//Prevent the default behaviour of the page drop
+			$(document).on('drop dragover', function (e){
+				e.preventDefault();
+				return false;
+			});	
 			
 			
 			
@@ -122,6 +163,9 @@
                     return false;
                 }
             }
+
+
+
 			
 			if (typeof settings.afterDialogShow === "function") {
                 if (!settings.afterDialogShow.call(this, $this)) {
@@ -149,6 +193,8 @@
 
 	
 	function _validateInput($this){
+		//TODO: validate
+		return true;
 	}
 	
 	function _closeDialog($this){
@@ -169,8 +215,6 @@
         }
 	
 	}
-
-
 
 	function _getFormValue(id,$field){
 		var type = $field.attr('data-type'),
@@ -311,14 +355,14 @@
 
 
 	function _submitForm($this,isNew,id,listName){
-		var setting = $this.data('settings'),
-			valuePairs = _getValuePairs($this),		
+		var settings   = $this.data('settings'),
+			valuePairs = _getValuePairs($this),					
+			list = settings.lists[listName],	
 			bReturn = true;	
 
 
-		if(isNew == 'true'){
-		console.log('spAdd');
-			//valuePairs = [['Title','New 1']];
+		if(isNew == 'true'){			
+			
 			//todo radio if empty undefined dont get value
 			$().SPServices({
 				operation: "UpdateListItems",					
@@ -326,25 +370,16 @@
 				batchCmd: "New",					
 				valuepairs: valuePairs ,
 				completefunc: function (xData, Status) {
+					console.log('add',xData)
 					$(xData.responseXML).SPFilterNode("ErrorText").each(function() { 
 		        		console.log(this);
 		        		alert($(this).text());
 		        		bReturn = false;
-		        	});							
-					return bReturn;
+		        	});			        					
 				}
-			});
-	
+			});	
 			
-
-	
-		} else {
-			//console.log('UpdateListItems',id,listName);
-			//console.log(valuePairs );
-			console.log('spUpdate');
-
-			//valuePairs = [['myCheckChoice','b;#b;#a;#a']];
-			
+		} else {			
 			$().SPServices({
 				operation: "UpdateListItems",					
 				listName: listName,
@@ -357,15 +392,76 @@
 		        		console.log(this);
 		        		alert($(this).text());
 		        		bReturn = false;
-		        	});							
-					return bReturn;
+		        	});	
 				}
-			});
+			});	
+				
+			if(list.allowAttachments == true){
+				_removeUnwantedAttachments($this,id,listName);				
+			}
+
+				
 		}
+		
+		/* handle attachments */
+		if(list.allowAttachments == true){
+			_addNewAttachments($this,id,listName);	
+			return false;
+		}
+		
+		
+		
 		
 		return bReturn;
 	}
 
+	function _addNewAttachments($this,id,listName){
+		var $newFiles = $('.jfspAttachments a.strike');
+		
+		$('.jfspNewAttachmentLink').each(function() { 
+    		var $newFile = $(this),
+	    		fileName = $newFile.attr('data-filename'),
+    			bytes    = $newFile.attr('data-bytes');    		
+    		
+			$().SPServices({
+				operation: "AddAttachment",					
+				listName: listName,
+				asynch: false,
+				listItemID:id,
+				fileName: fileName,
+				attachment: bytes,
+				completefunc: function (xData, Status) {	
+		        		console.log(xData,status);	
+				}
+			});	
+   			
+		 });			
+		
+	}
+
+
+
+
+	function _removeUnwantedAttachments($this,id,listName){
+		var $unwantedFiles = $('.jfspAttachments a.strike');
+		
+		$('.jfspAttachments a.strike').each(function() { 
+    		console.log(); 
+    		
+			$().SPServices({
+				operation: "DeleteAttachment",					
+				listName: listName,
+				asynch: false,
+				listItemID:id,
+				url:this.href,
+				completefunc: function (xData, Status) {	
+		        		console.log(xData,status);	
+				}
+			});	
+   		
+		 });			
+		
+	}
 
 
 	function _parseLists($this,settings){
@@ -488,7 +584,7 @@
 			item = _getListItem(id,list.listName),
 			objAttr = item.attributes;	
 			
-		console.log(list, list.title );		
+		console.log(list, item );		
 		
 		sHtml += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
 		sHtml +=  '<h3>'+ list.title + ' Item</h3>';		
@@ -497,11 +593,15 @@
 				
 		for(var i = 0; i < lenFields ; i++) {
 			field = fields[i];
-			if (    (list.ignoreFields.length > 1 && $.inArray(field.attributes.StaticName, list.ignoreFields) <= -1) ||  field.attributes.Required != 'TRUE'    ) {
+			if (    (list.ignoreFields.length > 1 && $.inArray(field.attributes.StaticName, list.ignoreFields) <= -1) ||  field.attributes.Required == 'TRUE'    ) {
 				sHtml += _getFieldReadHTML(field,objAttr );			
 			}
 		}	
-			
+		
+		if(list.allowAttachments == true){
+			sHtml += getReadAttachments(listName ,id);
+		}
+	
 		sHtml += '</div>';	
 
 		sHtml +=  '<div class="modal-footer">';				
@@ -546,10 +646,20 @@
 				
 		for(var i = 0; i < lenFields ; i++) {
 			field = fields[i];
-			if (    (list.ignoreFields.length > 1 && $.inArray(field.attributes.StaticName, list.ignoreFields) <= -1) ||  field.attributes.Required != 'TRUE'    ) {
+			if (    (list.ignoreFields.length > 1 && $.inArray(field.attributes.StaticName, list.ignoreFields) <= -1) ||  field.attributes.Required == 'TRUE'    ) {
 				sHtml += _getFieldHTML(field,objAttr );			
 			}
-		}		
+		}	
+		
+		if(list.allowAttachments == true){
+			sHtml += '<div id="jfspAttachmentDrop"><span class="jsfpReadLabel">Attachments: [Drop files here]</span><ul class="jfspAttachments">';
+			if(!isNew){
+				sHtml += getFormAttachments(listName ,id);
+			}
+			sHtml += '</ul><div class="jfspAttachButtonWrap"><input type="file" name="jfspAttachButton" class="jfspAttachButton" multiple="multiple"></div></div>';			
+		}
+
+	
 		sHtml += '</div>';	
 
 		sHtml +=  '<div class="modal-footer">';	
@@ -681,11 +791,7 @@
 
 				sReturn += '<div><span class="jsfpReadLabel">'+fieldAttr.DisplayName+':</span> <span class="jsfpReadValue">'+aValues.join(',') +'</span></div>';	
 				break;	
-			/*
-			case 'Attachments':
-				sReturn += 'TODO: '+type + ' ' + field.DisplayName + ' = ' + value + '<br />';
-				break;
-			*/
+
 			case 'Boolean':
 				value = (value ==1)?'yes':'no';
 						
@@ -822,11 +928,7 @@
 				sReturn += '<div class="jfspCheckBox">'+_getcheckboxHTML(field,values,fieldAttr,type,value,sRequired )+'</div>';
 				sReturn += '</div>';
 				break;
-			/*
-			case 'Attachments':
-				sReturn += 'TODO: '+type + ' ' + field.DisplayName + ' = ' + value + '<br />';
-				break;
-			*/		
+		
 			default:
 				console.log('type' ,type)
 				//sReturn += 'TODO: '+type + ' ' + field.DisplayName + ' = ' + value + '<br />';				
@@ -1018,6 +1120,118 @@
 		}
 		return obj;
 	};
+	
+	
+	
+	function getReadAttachments(list,id){
+		console.log('formatAttachments',list,id)
+		var sReturn = "<ul class='dialogAttachments'>";
+		
+		$().SPServices({
+			operation:'GetAttachmentCollection',
+			listName: list, 
+			async: false,
+			ID: id,
+			completefunc: function (xData, Status) {
+					
+				$(xData.responseXML).SPFilterNode("Attachment").each(function() {
+					console.log($(this).text());
+					
+					
+					var url = $(this).text(),
+						n=url.lastIndexOf("/") +1,
+						filename = url.substr(n,url.length - n );
+					
+					sReturn  += "<li><a href='" + url + "' target='_blank'><i class='icon-paperclip'></i> "+filename+"</a></li>";
+				});
+				
+			}
+		});
+		
+		sReturn += "</ul>";
+		
+		console.log(sReturn)
+	
+		return sReturn
+	
+	}	
+
+	function getFormAttachments(list,id){
+		console.log('formatAttachments',list,id)
+		var sReturn = "";
+		
+		$().SPServices({
+			operation:'GetAttachmentCollection',
+			listName: list, 
+			async: false,
+			ID: id,
+			completefunc: function (xData, Status) {
+					
+				$(xData.responseXML).SPFilterNode("Attachment").each(function() {
+					console.log($(this).text());
+					
+					
+					var url = $(this).text(),
+						n=url.lastIndexOf("/") +1,
+						filename = url.substr(n,url.length - n );
+					
+					sReturn  += "<li><a class='jfspCurrentAttachmentLink' data-filename='"+filename+"' href='" + url + "' target='_blank'><i class='icon-paperclip'></i> "+filename+" </a> <i class='jfspIconAttachRemove icon-remove-sign'></i></li>";
+				});
+				
+			}
+		});
+		
+	
+		return sReturn
+	
+	}
+	
+	function _handleFileChange($this,files){
+		var fileLoader = new FileReader(),
+			file = {},
+			i=0;
+		
+		for(i = 0; i < files.length; i++) {
+			file = files[i];
+			console.log(file.name,file)
+			
+			fileLoader = new FileReader();
+			fileLoader.filename = file.name;
+			
+			fileLoader.onload = function() {
+				console.log('onload',this);	
+				var data = this.result,					
+					filename = this.filename,
+					n=data.indexOf(";base64,") + 8; 	
+					data= data.substring(n);				
+			
+				$('.jfspAttachments').append("<li><a class='jfspNewAttachmentLink' data-filename='"+filename+"' data-bytes='" + data + "' href='javascript:void(0)' target='_blank'><i class='icon-cloud-upload'></i> "+filename+ " </a> <i class='jfspIconAttachCancel icon-remove-sign'></i></li>");
+				
+			};
+			
+			fileLoader.onabort = function() {
+				alert("The upload was aborted.");
+			};
+			
+			fileLoader.onerror = function() {
+				alert("An error occured while reading the file.");
+			};				
+			
+			fileLoader.readAsDataURL(file);
+			//fileLoader.readAsBinaryString(file);
+
+		}
+
+	};
+	
+
+	function _uint8ToString(buf) {
+	    var i, length, out = '';
+	    for (i = 0, length = buf.length; i < length; i += 1) {
+	        out += String.fromCharCode(buf[i]);
+	    }
+	    return out;
+	}
 
 	function _formatOWSItem(item,idx){
 		var aTmp = [],
