@@ -554,11 +554,11 @@
 				if (lists[listName].readIgnoreFields.length) {
 						lists[listName].readIgnoreFields= lists[listName].readIgnoreFields.split(",");
 				}
-				if (lists[listName].listIgnoreFields .length) {
+				if (lists[listName].listIgnoreFields.length) {
 						lists[listName].listIgnoreFields = lists[listName].listIgnoreFields .split(",");
 				}
 
-				if (lists[listName].updateIgnoreFields .length) {
+				if (lists[listName].updateIgnoreFields.length) {
 						lists[listName].updateIgnoreFields = lists[listName].updateIgnoreFields .split(",");
 				}
 
