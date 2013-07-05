@@ -56,6 +56,10 @@ margin-bottom:15px;
 .jfspIconAttachDelete{
 	padding-left:5px;
 }
+.jfspCurrentAttachmentLink,
+.jfspNewAttachmentLink{
+	color:#222 !important;
+}
 .strike{
 	text-decoration: line-through;
 	color:#B01E00 !important;
@@ -67,4 +71,7 @@ margin-bottom:15px;
 	background-color:#E2EBDA;
 	border:2px dashed #7BAD18;
 }
-
+.dragText{
+	color: #777;
+    float: right;
+}    
