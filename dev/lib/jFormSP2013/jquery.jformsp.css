@@ -1,96 +1,24 @@
-/* Table css  */
-.jfspTable{
-	border:1px solid #eee;
-	width:100%;
-	background-color:#efefef;
-} 
-
-.jfspTable thead th{
+.jfspList thead th{
     text-align:left;
     padding:10px;
     border:none;
-    background-color:#ddd;
+    background-color:#E2EBDA;
 	border-bottom:2px dashed #aaa; 
 	vertical-align: middle;	
 }
 
-
-.jfspTable tfoot a{
-	display:block;
-	width:100%;
-	text-align:right;
-	background-color:#aaa;
-	padding: 3px 0;	
-	color:#fefefe;
-	text-decoration:none;	
-	-webkit-transition: background-color .5s;
-	-moz-transition: background-color .5s;
-	-o-transition: background-color .5s;
-	-ms-transition: background-color .5s;
-	transition: background-color .5s;	
-}	
-
-.jfspTable tfoot a span{margin-right:10px; }
-
-.jfspTable tfoot a:hover{
-	background-color:#777;	
-	color:#efefef;
-}
-
-.jfspTable tfoot td{
-	padding:0;
-	vertical-align: middle;
-}
-
-.jfspTable tfoot i, .jfspTable tbody td:last-child a {
-    background-color:#ddd;
-	text-decoration:none;	
-	color: #222222;
-    display: inline-block;
-    font-size: 1.2em;
-    text-align: center ;
-	height:30px;	
-	width:30px;
-	line-height: 30px;	
-	margin-right:5px;	
-}
-
-.jfspTable tfoot i:hover, .jfspTable tbody td:last-child a:hover {
-    background-color:#bbb;    
-}
-
-.jfspTable tbody tr:last-child td{
-	border-bottom:2px dashed #ccc;    
-}
-
-.jfspTable tbody td:last-child{
-	text-align:right;
-}
-
-.jfspTable tbody td:last-child span{
-	display:none;
-}
-
-.jfspTable tbody td{
-	padding:3px 0 3px 3px;
-	border: none;
-	vertical-align: middle;
-}
-
-.jfspTable tbody tr:last-child .downButton , .jfspTable tbody tr:first-child .upButton {
-     visibility: hidden;
-}
-
-.jfspTable tbody tr:nth-child(2n),.jfspTable tbody tr:nth-child(2n) td{
-	background-color:#e6e6e6;
+.jfspList td{
+	vertical-align: middle;	
 }
 
 
-  
-.modal-header{}
 
-
-
+.jfspList .button {
+	float:left;
+	width:auto;
+	padding:2px 4px; 
+	margin:2px;
+}
 
 .modal-body label{padding:0 20px 0 5px; margin-top:2px}
 .modal-body input{margin:0}
@@ -99,9 +27,9 @@
 .modal-body textarea{width:98%}
 
 .jfspFieldTitle span{color:#B81B1B}
-/*
+
 .jsfpField[data-id='ID']{display:none;}
-*/
+
 #modalDialog button.close{min-width:1em !important}
 
 .jfspHint{
