@@ -46,14 +46,14 @@
 				}
 			});
 
-			$('body').on('click','a.jsfpRemove', function(e){
+			$('body').on('click','a.jsfpDelete', function(e){
 				var $link = $(e.target),
 					listName = $link.attr('data-list'),
 					id= $link.attr('data-itemid');
 
-				if(_removeItem($this,id,listName)){
+				if(_deleteItem($this,id,listName)){
 					_closeDialog($this);
-					_feedback($this,'Item removed successfully');
+					_feedback($this,'Item deleted successfully');
 				}
 			});
 
@@ -69,7 +69,7 @@
 				var $button = $(this),				
 				list = $button.attr('data-list');
 
-				$this.jfsp('showForm','add',{list:list});
+				$this.jfsp('showForm','create',{list:list});
 			});
 		
 			
@@ -78,7 +78,7 @@
 				id = $button.attr('data-itemid'),
 				list = $button.attr('data-list');
 
-				$this.jfsp('showForm','edit',{id:id,list:list});
+				$this.jfsp('showForm','update',{id:id,list:list});
 			});
 			
 			$('body').on('click','.jfspListDeleteItem', function(){
@@ -86,10 +86,10 @@
 				id = $button.attr('data-itemid'),
 				list = $button.attr('data-list');
 
-				$this.jfsp('showForm','remove',{id:id,list:list});
+				$this.jfsp('showForm','delete',{id:id,list:list});
 			});
 
-			$('body').on('click','i.jfspIconAttachRemove', function(){
+			$('body').on('click','i.jfspIconAttachDelete', function(){
 				var $icon = $(this);
 				$icon.toggleClass('icon-remove-sign').toggleClass('icon-undo');
 				$icon.siblings().toggleClass('strike');
@@ -103,16 +103,16 @@
 				_closeDialog($this);
 			});
 
-			$('body').on('click','a.jsfpEditItem', function(){
+			$('body').on('click','a.jsfpUpdateItem', function(){
 				var $button = $(this);
 				_closeDialog($this);
-				$this.jfsp('showForm','edit',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});
+				$this.jfsp('showForm','update',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});
 			});
 
 			$('body').on('click','a.jsfpTemplateItem', function(){
 				var $button = $(this);
 				_closeDialog($this);
-				$this.jfsp('showForm','add',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});
+				$this.jfsp('showForm','create',{id:$button.attr('data-itemid'),list:$button.attr('data-list')});
 			});
 
 			$('body').on('change','.jfspAttachButton', function(event){
@@ -241,14 +241,14 @@
 			console.log(itemAttributes );
 			sTBody +='<tr>';
 			
-			sTBody +='<td>';
-			sTBody +='<div data-list="'+listName+'" data-itemid="'+itemAttributes.ID+'" class="button jfspListReadItem"><i class="icon-file"></i></div>';
-			sTBody +='<div data-list="'+listName+'" data-itemid="'+itemAttributes.ID+'" class="button jfspListUpdateItem"><i class="icon-check"></i></div>';
-			sTBody +='<div data-list="'+listName+'" data-itemid="'+itemAttributes.ID+'" class="button jfspListDeleteItem"><i class="icon-trash"></i></div>';			
-			sTBody +='</td>';
+			sTBody +='<td><div class="btn-group">';
+			sTBody +='<div data-list="'+listName+'" data-itemid="'+itemAttributes.ID+'" class="btn jfspListReadItem"><i class="icon-file-text-alt"></i></div>';
+			sTBody +='<div data-list="'+listName+'" data-itemid="'+itemAttributes.ID+'" class="btn jfspListUpdateItem"><i class="icon-edit"></i></div>';
+			sTBody +='<div data-list="'+listName+'" data-itemid="'+itemAttributes.ID+'" class="btn jfspListDeleteItem"><i class="icon-remove"></i></div>';			
+			sTBody +='</div></td>';
 			
 			if(j==0){
-				sTHead +='<tr><th><div id="addButton" data-list="'+listName+'"  class="button jfspListCreateItem"><i class="icon-plus"></i> New </div></th>';
+				sTHead +='<tr><th><div id="createButton" data-list="'+listName+'"  class="btn btn-primary jfspListCreateItem"><i class="icon-plus"></i> New </div></th>';
 			}
 			for( i = 0; i < lenFields ; i++) {
 				field = fields[i];
@@ -272,7 +272,7 @@
 		sTHead += '</thead>';
 		sTBody += '</tbody>';
 
-		sHtml = '<table class="jfspList table table-condensed table-striped table-bordered '+ listName+'">' + sTHead + sTBody + '</table>';
+		sHtml = '<table class="jfspList table table-hover table-condensed'+ listName+'">' + sTHead + sTBody + '</table>';
 		$('table.'+listName).remove();
 		$this.html(sHtml);
 
@@ -426,7 +426,7 @@
 		});
 	}
 
-	function _removeItem($this,id,listName){
+	function _deleteItem($this,id,listName){
 		var bReturn = true;		
 
 		$().SPServices({
@@ -483,18 +483,18 @@
 			});
 			
 			if(list.allowAttachments === true){
-				_removeUnwantedAttachments($this,id,listName);
+				_deleteUnwantedAttachments($this,id,listName);
 			}
 		}
 		
 		/* handle attachments */
 		if(list.allowAttachments === true){
-			_addNewAttachments($this,id,listName);
+			_createNewAttachments($this,id,listName);
 		}
 		return bReturn;
 	}
 
-	function _addNewAttachments($this,id,listName){
+	function _createNewAttachments($this,id,listName){
 		$('.jfspNewAttachmentLink').each(function(){
 			var $newFile = $(this),
 				fileName = $newFile.attr('data-filename'),
@@ -511,7 +511,7 @@
 		});
 	}
 
-	function _removeUnwantedAttachments($this,id,listName){	
+	function _deleteUnwantedAttachments($this,id,listName){	
 		$('.jfspAttachments a.strike').each(function(){
 			$().SPServices({
 				operation: "DeleteAttachment",
@@ -609,16 +609,16 @@
 				sReturn = _getReadHTML($this,obj);
 				break;
 
-			case ('add'):
+			case ('create'):
 				sReturn = _getFormHTML($this,obj,true);
 				break;
 
-			case ('edit'):
+			case ('update'):
 				sReturn = _getFormHTML($this,obj,false);
 				break;
 
-			case ('remove'):
-				sReturn = _getRemoveFormHTML($this,obj);
+			case ('delete'):
+				sReturn = _getDeleteFormHTML($this,obj);
 				break;
 		}
 		return sReturn;
@@ -652,9 +652,9 @@
 		}
 
 		sHtml += '</div><div class="modal-footer">';
-		sHtml += '<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
+		sHtml += '<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-undo"></i> Cancel</a>';
 		sHtml += '<a href="javascript:void(0)" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-inverse jsfpTemplateItem"><i class="icon-copy"></i> Use as template</a>';
-		sHtml += '<a href="javascript:void(0)" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-primary jsfpEditItem"><i class="icon-edit"></i> Edit</a></div>';
+		sHtml += '<a href="javascript:void(0)" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-primary jsfpUpdateItem"><i class="icon-edit"></i> Update</a></div>';
 		sHtml += '</div>';
 
 		return sHtml;
@@ -679,7 +679,7 @@
 			sHtml +=	'<h3>'+ list.title + ': New item </h3>';
 			objAttr.ID = '';
 		} else {
-			sHtml += '<h3>'+ list.title + ': Edit item </h3>';
+			sHtml += '<h3>'+ list.title + ': Update item </h3>';
 		}
 
 		sHtml += '</div><div class="modal-body">';
@@ -701,11 +701,11 @@
 
 		sHtml += '</div><div class="modal-footer">';
 		if(isNew){
-			sHtml +=	'<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
-			sHtml +=	'<a href="javascript:void(0)" data-isnew="true" data-itemid="" data-list="'+listName +'" class="btn btn-primary	jsfpSubmit"><i class="icon-ok-circle"></i> Submit</a> </div>';
+			sHtml +=	'<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-undo"></i> Cancel</a>';
+			sHtml +=	'<a href="javascript:void(0)" data-isnew="true" data-itemid="" data-list="'+listName +'" class="btn btn-primary	jsfpSubmit"><i class="icon-save"></i> Submit</a> </div>';
 		} else {
-			sHtml +=	'<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
-			sHtml +=	'<a href="javascript:void(0)" data-isnew="false" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-primary jsfpSubmit"><i class="icon-ok-circle"></i> Update</a> </div>';
+			sHtml +=	'<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-undo"></i> Cancel</a>';
+			sHtml +=	'<a href="javascript:void(0)" data-isnew="false" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-primary jsfpSubmit"><i class="icon-save"></i> Submit</a> </div>';
 		}
 		sHtml += '</div>';
 
@@ -713,7 +713,7 @@
 	}
 
 
-	function _getRemoveFormHTML($this,obj){
+	function _getDeleteFormHTML($this,obj){
 		var sHtml = '',
 			settings = $this.data('settings'),
 			id = obj.id,
@@ -727,7 +727,7 @@
 			objAttr = item.attributes;
 
 		sHtml += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-		sHtml += '<h3>'+ list.title + ': Remove item </h3></div><div class="modal-body">';
+		sHtml += '<h3>'+ list.title + ': Delete item </h3></div><div class="modal-body">';
 
 		for( i = 0; i < lenFields ; i++) {
 			field = fields[i];
@@ -736,8 +736,8 @@
 				}
 		}
 		sHtml += '</div><div class="modal-footer">';
-		sHtml +=	'<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-remove-circle"></i> Cancel</a>';
-		sHtml +=	'<a href="javascript:void(0)" data-isnew="false" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-warning jsfpRemove"><i class="icon-trash"></i> Remove</a> </div>';
+		sHtml +=	'<a href="javascript:void(0)" class="btn jsfpCancel"><i class="icon-undo"></i> Cancel</a>';
+		sHtml +=	'<a href="javascript:void(0)" data-isnew="false" data-itemid="'+id+'" data-list="'+listName +'" class="btn btn-warning jsfpDelete"><i class="icon-trash"></i> Delete</a> </div>';
 		sHtml += '</div>';
 		return sHtml;
 	}
@@ -1164,7 +1164,7 @@
 						n=url.lastIndexOf("/") +1,
 						filename = url.substr(n,url.length - n );
 
-					sReturn	+= "<li><a class='jfspCurrentAttachmentLink' data-filename='"+filename+"' href='" + url + "' target='_blank'><i class='icon-paperclip'></i> "+filename+" </a> <i class='jfspIconAttachRemove icon-remove-sign'></i></li>";
+					sReturn	+= "<li><a class='jfspCurrentAttachmentLink' data-filename='"+filename+"' href='" + url + "' target='_blank'><i class='icon-paperclip'></i> "+filename+" </a> <i class='jfspIconAttachDelete icon-remove-sign'></i></li>";
 				});
 			}
 		});

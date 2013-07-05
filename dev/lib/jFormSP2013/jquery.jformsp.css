@@ -1,8 +1,12 @@
+.jfspList{
+	 background-color:#f5f5f5;
+
+}
 .jfspList thead th{
     text-align:left;
     padding:10px;
     border:none;
-    background-color:#E2EBDA;
+    background-color:#dddddd;
 	border-bottom:2px dashed #aaa; 
 	vertical-align: middle;	
 }
@@ -11,14 +15,16 @@
 	vertical-align: middle;	
 }
 
-
-
-.jfspList .button {
-	float:left;
-	width:auto;
-	padding:2px 4px; 
-	margin:2px;
+.jfspList td:first-child{
+	white-space:nowrap;
+	min-width: 100px;
+	
 }
+
+.modal-header {
+	background-color: #E2EBDA;
+}
+
 
 .modal-body label{padding:0 20px 0 5px; margin-top:2px}
 .modal-body input{margin:0}
@@ -47,7 +53,7 @@ margin-bottom:15px;
 .jsfpReadValue{
 	
 }
-.jfspIconAttachRemove{
+.jfspIconAttachDelete{
 	padding-left:5px;
 }
 .strike{
